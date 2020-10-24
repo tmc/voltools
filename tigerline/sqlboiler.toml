@@ -1,0 +1,14 @@
+[psql]
+dbname = "geodb"
+user = "geodb"
+host = "localhost"
+port = 5433
+sslmode = "disable"
+blacklist = [
+"spatial_ref_sys", "geography_columns", "geometry_columns",
+"zip_codes.geom",
+"congressional_districts.geom",
+]
+
+[aliases.tables.zip_codes.columns]
+  zcta5ce10 = "ZipCode"
