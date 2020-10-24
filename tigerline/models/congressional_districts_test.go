@@ -568,7 +568,7 @@ func testCongressionalDistrictsSelect(t *testing.T) {
 }
 
 var (
-	congressionalDistrictDBTypes = map[string]string{`Gid`: `integer`, `Statefp`: `character varying`, `CD116FP`: `character varying`, `Geoid`: `character varying`, `Namelsad`: `character varying`, `Lsad`: `character varying`, `Cdsessn`: `character varying`, `MTFCC`: `character varying`, `Funcstat`: `character varying`, `Aland`: `double precision`, `Awater`: `double precision`, `Intptlat`: `character varying`, `Intptlon`: `character varying`}
+	congressionalDistrictDBTypes = map[string]string{`Gid`: `integer`, `Statefp`: `character varying`, `CD116FP`: `character varying`, `Geoid`: `character varying`, `Name`: `character varying`, `Lsad`: `character varying`, `Cdsessn`: `character varying`, `MTFCC`: `character varying`, `Funcstat`: `character varying`, `Aland`: `double precision`, `Awater`: `double precision`, `Intptlat`: `character varying`, `Intptlon`: `character varying`}
 	_                            = bytes.MinRead
 )
 

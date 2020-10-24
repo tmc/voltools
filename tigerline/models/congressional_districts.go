@@ -28,7 +28,7 @@ type CongressionalDistrict struct {
 	Statefp  null.String  `boil:"statefp" json:"statefp,omitempty" toml:"statefp" yaml:"statefp,omitempty"`
 	CD116FP  null.String  `boil:"cd116fp" json:"cd116fp,omitempty" toml:"cd116fp" yaml:"cd116fp,omitempty"`
 	Geoid    null.String  `boil:"geoid" json:"geoid,omitempty" toml:"geoid" yaml:"geoid,omitempty"`
-	Namelsad null.String  `boil:"namelsad" json:"namelsad,omitempty" toml:"namelsad" yaml:"namelsad,omitempty"`
+	Name     null.String  `boil:"namelsad" json:"namelsad,omitempty" toml:"namelsad" yaml:"namelsad,omitempty"`
 	Lsad     null.String  `boil:"lsad" json:"lsad,omitempty" toml:"lsad" yaml:"lsad,omitempty"`
 	Cdsessn  null.String  `boil:"cdsessn" json:"cdsessn,omitempty" toml:"cdsessn" yaml:"cdsessn,omitempty"`
 	MTFCC    null.String  `boil:"mtfcc" json:"mtfcc,omitempty" toml:"mtfcc" yaml:"mtfcc,omitempty"`
@@ -47,7 +47,7 @@ var CongressionalDistrictColumns = struct {
 	Statefp  string
 	CD116FP  string
 	Geoid    string
-	Namelsad string
+	Name     string
 	Lsad     string
 	Cdsessn  string
 	MTFCC    string
@@ -61,7 +61,7 @@ var CongressionalDistrictColumns = struct {
 	Statefp:  "statefp",
 	CD116FP:  "cd116fp",
 	Geoid:    "geoid",
-	Namelsad: "namelsad",
+	Name:     "namelsad",
 	Lsad:     "lsad",
 	Cdsessn:  "cdsessn",
 	MTFCC:    "mtfcc",
@@ -148,7 +148,7 @@ var CongressionalDistrictWhere = struct {
 	Statefp  whereHelpernull_String
 	CD116FP  whereHelpernull_String
 	Geoid    whereHelpernull_String
-	Namelsad whereHelpernull_String
+	Name     whereHelpernull_String
 	Lsad     whereHelpernull_String
 	Cdsessn  whereHelpernull_String
 	MTFCC    whereHelpernull_String
@@ -162,7 +162,7 @@ var CongressionalDistrictWhere = struct {
 	Statefp:  whereHelpernull_String{field: "\"congressional_districts\".\"statefp\""},
 	CD116FP:  whereHelpernull_String{field: "\"congressional_districts\".\"cd116fp\""},
 	Geoid:    whereHelpernull_String{field: "\"congressional_districts\".\"geoid\""},
-	Namelsad: whereHelpernull_String{field: "\"congressional_districts\".\"namelsad\""},
+	Name:     whereHelpernull_String{field: "\"congressional_districts\".\"namelsad\""},
 	Lsad:     whereHelpernull_String{field: "\"congressional_districts\".\"lsad\""},
 	Cdsessn:  whereHelpernull_String{field: "\"congressional_districts\".\"cdsessn\""},
 	MTFCC:    whereHelpernull_String{field: "\"congressional_districts\".\"mtfcc\""},

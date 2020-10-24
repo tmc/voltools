@@ -12,3 +12,5 @@ blacklist = [
 
 [aliases.tables.zip_codes.columns]
   zcta5ce10 = "ZipCode"
+[aliases.tables.congressional_districts.columns]
+  namelsad = "Name"
