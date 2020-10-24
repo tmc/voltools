@@ -4,7 +4,11 @@ PGPASSWORD?=changeme
 PGDATABASE?=geodb
 
 .PHONY: all
-all:
+all: generate
+
+.PHONY: generate
+generate:
+	go generate ./...
 
 .PHONY: deps
 deps:
