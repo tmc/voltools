@@ -1,0 +1,5 @@
+db/migrations/000003_counties.up.sql
+db/migrations/000004_state_fips_codes.up.sql
+db/migrations/000006_precincts.up.sql
+db/migrations/000007_states.up.sql
+cloud_sql_proxy
