@@ -1,11 +1,11 @@
-all: dist/index.html
+all: build/index.html
 
 node_modules/.bin/webpack:
 	yarn
 
 .PHONY: build/index.html
 build/index.html: node_modules/.bin/webpack
-	$(shell npm bin)/parcel build index.html
+	$(shell npm bin)/react-scripts build
 
 .PHONY: deps
 deps:
@@ -13,7 +13,7 @@ deps:
 
 .PHONY: clean
 clean:
-	rm dist/*
+	rm build/*
 
 .PHONY: realclean
 realclean: clean
