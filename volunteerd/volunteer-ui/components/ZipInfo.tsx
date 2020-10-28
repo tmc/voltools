@@ -26,9 +26,6 @@ export default function ZipInfo(props) {
     <div>
       <Card>
         <CardContent>
-          <Typography className={classes.title} color="textSecondary" gutterBottom>
-            Zipcode Info
-          </Typography>
           <Typography variant="body2" component="p">
             Enter your zipcode here
           </Typography>

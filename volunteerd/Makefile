@@ -4,11 +4,24 @@ PGPASSWORD?=changeme
 PGDATABASE?=geodb
 
 .PHONY: all
-all: generate
+all: volunteerd ui
+
+.PHONY: lint
+lint:
+	@command -v staticcheck 2>&1 > /dev/null || go get honnef.co/go/tools/cmd/staticcheck
+	staticcheck ./...
+
+.PHONY: volunteerd
+volunteerd:
+	go install -v ./...
 
 .PHONY: generate
 generate:
 	go generate ./...
+
+.PHONY: ui
+ui:
+	make -C volunteer-ui
 
 .PHONY: deps
 deps:

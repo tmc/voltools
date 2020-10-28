@@ -150,7 +150,7 @@ func (s *Server) renderTemplate(w http.ResponseWriter, templateName string, ctx 
 }
 
 func (s *Server) templateContext(r *http.Request) interface{} {
-	appHTML, appCSS, err := renderReactApp("volunteer-ui-parcel/dist/parcel-manifest.json", "index.js", "renderServerSide()")
+	appHTML, appCSS, err := renderReactApp(filepath.Join(s.config.TemplateRoot, "parcel-manifest.json"), "index.js", "renderServerSide()")
 
 	s.mu.Lock()
 	s.cachedAppCSS = appCSS

@@ -50,9 +50,9 @@ func renderReactApp(manifestPath, path, entrypoint string) (template.HTML, templ
 	if len(res) == 0 {
 		return "", "", fmt.Errorf("got zero values from render function - it should return an array of [html, css]")
 	} else if len(res) == 1 {
-		return template.HTML(res[0]), "", nil
+		return template.HTML(res[0]), "", err
 	} else {
-		return template.HTML(res[0]), template.CSS(res[1]), nil
+		return template.HTML(res[0]), template.CSS(res[1]), err
 	}
 }
 
