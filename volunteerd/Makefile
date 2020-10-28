@@ -48,6 +48,14 @@ shapefiles/tl_2019_us_zcta510.zip:
 shapefiles/tl_2019_us_zcta510.shp: shapefiles/tl_2019_us_zcta510.zip
 	sh -c 'cd shapefiles; unzip tl_2019_us_zcta510.zip'
 
+shapefiles/tl_2019_us_state.zip:
+	#curl -o $@ https://www2.census.gov/geo/tiger/TIGER2019/STATE/tl_2019_us_state.zip
+	curl -o $@ ftp://ftp2.census.gov/geo/tiger/TIGER2019/STATE/tl_2019_us_state.zip
+
+
+shapefiles/tl_2019_us_state.shp: shapefiles/tl_2019_us_state.zip
+	sh -c 'cd shapefiles; unzip tl_2019_us_state.zip'
+
 db/migrations/000002_congressional_districts.up.sql: shapefiles/tl_2019_us_cd116.shp
 	shp2pgsql shapefiles/tl_2019_us_cd116.shp congressional_districts > db/migrations/000002_congressional_districts.up.sql
 
@@ -57,8 +65,8 @@ db/migrations/000003_counties.up.sql: shapefiles/tl_2019_us_county.shp
 db/migrations/000005_zip_codes.up.pgsql: shapefiles/tl_2019_us_zcta510.shp
 	shp2pgsql -D $< zip_codes > $@
 
-db/migrations/000006_precincts.up.sql:
-	shp2pgsql shapefiles/Precincts041714.shp precincts > db/migrations/000006_precincts.up.sql
+db/migrations/000006_states.up.sql: shapefiles/tl_2019_us_state.shp
+	shp2pgsql -D $< states > $@
 
 cloud_sql_proxy:
 	curl -so cloud_sql_proxy https://dl.google.com/cloudsql/cloud_sql_proxy.darwin.amd64
