@@ -1,4 +1,4 @@
-module github.com/HF-RapidResponse/geotools/tigerline
+module github.com/HF-RapidResponse/geotools/volunteerd
 
 go 1.15
 

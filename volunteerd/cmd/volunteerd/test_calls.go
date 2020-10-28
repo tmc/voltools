@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/HF-RapidResponse/geotools/tigerline/models"
+	"github.com/HF-RapidResponse/geotools/volunteerd/models"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 

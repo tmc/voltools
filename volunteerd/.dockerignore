@@ -1,0 +1,5 @@
+node_modules
+shapefiles
+.cache
+db/migrations/
+cloud_sql_proxy
