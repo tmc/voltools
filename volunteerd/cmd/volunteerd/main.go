@@ -4,6 +4,7 @@ package main
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"html/template"
@@ -32,7 +33,8 @@ func main() {
 		Verbose:      *flagVerbose,
 		Listen:       *flagListen,
 		DatabaseURL:  getEnv("DATABASE_URL", "postgres://localhost/db"),
-		TemplateRoot: getEnv("VOLUNTEERD_TEMPLATE_ROOT", "./volunteer-ui/dist"),
+		TemplateRoot: getEnv("VOLUNTEERD_TEMPLATE_ROOT", "./templates"),
+		StaticRoot:   getEnv("VOLUNTEERD_STATIC_ROOT", "./volunteer-ui/dist"),
 	}); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
@@ -70,6 +72,7 @@ type Config struct {
 	// A/the pattern to pass files through without template interpolation.
 	AssetRegexp  string
 	TemplateRoot string
+	StaticRoot   string
 }
 
 func NewServer(ctx context.Context, config Config) (*Server, error) {
@@ -129,10 +132,14 @@ func (s *Server) ListenAndServe() error {
 func (s *Server) getTemplateFromDisk(templateName string) string {
 	// TODO: add (aggressive) caching.
 	c, err := ioutil.ReadFile(filepath.Join(s.config.TemplateRoot, templateName))
+	originalErr := err
 	if err != nil {
-		return fmt.Sprintf(`issue finding template: %v`, err)
+		c, err = ioutil.ReadFile(filepath.Join(s.config.StaticRoot, templateName))
 	}
-	return string(c)
+	if err == nil {
+		return string(c)
+	}
+	return fmt.Sprintf(`issue finding template: %v (also encountered: %v)`, originalErr, err)
 }
 
 func (s *Server) renderTemplate(w http.ResponseWriter, templateName string, ctx interface{}) error {
@@ -191,7 +198,7 @@ func (s *Server) handleZip(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		panic(err)
 	}
-	s.renderTemplate(w, "zip_detail.html", zi)
+	json.NewEncoder(w).Encode(zi)
 }
 
 func (s *Server) handleCSS(w http.ResponseWriter, r *http.Request) {

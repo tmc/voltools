@@ -32,7 +32,7 @@ func (s *Server) lookupZipInfo(ctx context.Context, zip string) (*ZipInfo, error
 	}
 	zipCode := zipCodes[0]
 	cds, err := models.CongressionalDistricts(
-		qm.Where(`ST_Intersects(geom, (select geom from zip_codes where zcta5ce10 = ?))`, zipCodes),
+		qm.Where(`ST_Intersects(geom, (select geom from zip_codes where zcta5ce10 = ?))`, zipCode.ZipCode),
 	).All(ctx, s.db)
 	if err != nil {
 		return nil, err
