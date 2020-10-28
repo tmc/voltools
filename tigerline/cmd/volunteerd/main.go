@@ -11,6 +11,8 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"regexp"
+	"sync"
 
 	"github.com/Masterminds/sprig"
 	"github.com/lib/pq"
@@ -29,19 +31,30 @@ func main() {
 	if err := run(Config{
 		Verbose:      *flagVerbose,
 		Listen:       *flagListen,
-		DatabaseURL:  os.Getenv("DATABASE_URL"),
-		TemplateRoot: "./templates",
+		DatabaseURL:  getEnv("DATABASE_URL", "postgres://localhost/db"),
+		TemplateRoot: getEnv("VOLUNTEERD_TEMPLATE_ROOT", "./volunteer-ui/dist"),
 	}); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
 }
 
+func getEnv(envVar, defaultValue string) string {
+	if s := os.Getenv(envVar); s != "" {
+		return s
+	}
+	return defaultValue
+}
+
 // Server implements the server for volunteerd.
 type Server struct {
 	config Config
 
-	db *sql.DB
+	assetRegexp *regexp.Regexp
+	db          *sql.DB
+
+	mu           sync.RWMutex // protects the following
+	cachedAppCSS template.CSS
 }
 
 // Config describes the configuration for the server.
@@ -51,6 +64,8 @@ type Config struct {
 	Listen      bool
 	DatabaseURL string
 
+	// A/the pattern to pass files through without template interpolation.
+	AssetRegexp  string
 	TemplateRoot string
 }
 
@@ -63,10 +78,15 @@ func NewServer(ctx context.Context, config Config) (*Server, error) {
 	if err != nil {
 		return nil, err
 	}
+	if config.AssetRegexp == "" {
+		config.AssetRegexp = `\.(css|js|svg)$`
+	}
+	re, err := regexp.Compile(config.AssetRegexp)
 	return &Server{
-		config: config,
-		db:     db,
-	}, nil
+		config:      config,
+		db:          db,
+		assetRegexp: re,
+	}, err
 }
 
 func run(cfg Config) error {
@@ -91,6 +111,7 @@ func (s *Server) ListenAndServe() error {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/", s.handleRoot)
+	mux.HandleFunc("/index.css", s.handleCSS)
 	mux.HandleFunc("/zip/", s.handleZip)
 
 	port := "8080"
@@ -111,8 +132,14 @@ func (s *Server) getTemplateFromDisk(templateName string) string {
 }
 
 func (s *Server) renderTemplate(w http.ResponseWriter, templateName string, ctx interface{}) error {
+	contents := s.getTemplateFromDisk(templateName)
+	if s.assetRegexp.MatchString(templateName) {
+		// TODO: implement a more efficient/caching mechanism. Also consider file embedding.
+		fmt.Fprint(w, contents)
+		return nil
+	}
 	// TODO: Parse on startup (and HUP?), not every time.
-	t, err := template.New(templateName).Funcs(sprig.FuncMap()).Parse(s.getTemplateFromDisk(templateName))
+	t, err := template.New(templateName).Funcs(sprig.FuncMap()).Parse(contents)
 	if err != nil {
 		return err
 	}
@@ -120,31 +147,36 @@ func (s *Server) renderTemplate(w http.ResponseWriter, templateName string, ctx 
 }
 
 func (s *Server) templateContext(r *http.Request) interface{} {
-	app, err := renderReactApp("volunteer-ui/dist/parcel-manifest.json", "index.js", "renderServerSide()")
+	appHTML, appCSS, err := renderReactApp("volunteer-ui-parcel/dist/parcel-manifest.json", "index.js", "renderServerSide()")
+
+	s.mu.Lock()
+	s.cachedAppCSS = appCSS
+	s.mu.Unlock()
 	return struct {
-		Env         string
-		Request     *http.Request
-		Prerendered string
-		Error       error
+		Env             string
+		Request         *http.Request
+		IsPrerendered   string
+		PrerenderedHTML template.HTML
+		PrerenderedCSS  template.CSS
+		Error           error
 	}{
-		Env:         "dev",
-		Request:     r,
-		Prerendered: app,
-		Error:       err,
+		Env:             "dev",
+		Request:         r,
+		PrerenderedHTML: appHTML,
+		PrerenderedCSS:  appCSS,
+		Error:           err,
 	}
 }
 
 func (s *Server) handleRoot(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("root req")
 	path := r.URL.Path
 	if path == "/" {
 		path = "index.html"
 	}
-	fmt.Println("rendering", path)
+	// don't parse as template
 	if err := s.renderTemplate(w, path, s.templateContext(r)); err != nil {
 		fmt.Fprintln(w, err)
 	}
-	fmt.Println("done rendering index.html")
 }
 
 func (s *Server) handleZip(w http.ResponseWriter, r *http.Request) {
@@ -156,4 +188,11 @@ func (s *Server) handleZip(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 	s.renderTemplate(w, "zip_detail.html", zi)
+}
+
+func (s *Server) handleCSS(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/css")
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	fmt.Fprintln(w, s.cachedAppCSS)
 }
