@@ -149,7 +149,7 @@ func testCongressionalDistrictsExists(t *testing.T) {
 		t.Error(err)
 	}
 
-	e, err := CongressionalDistrictExists(ctx, tx, o.Gid)
+	e, err := CongressionalDistrictExists(ctx, tx, o.Geoid)
 	if err != nil {
 		t.Errorf("Unable to check if CongressionalDistrict exists: %s", err)
 	}
@@ -175,7 +175,7 @@ func testCongressionalDistrictsFind(t *testing.T) {
 		t.Error(err)
 	}
 
-	congressionalDistrictFound, err := FindCongressionalDistrict(ctx, tx, o.Gid)
+	congressionalDistrictFound, err := FindCongressionalDistrict(ctx, tx, o.Geoid)
 	if err != nil {
 		t.Error(err)
 	}
@@ -491,6 +491,166 @@ func testCongressionalDistrictsInsertWhitelist(t *testing.T) {
 
 	if count != 1 {
 		t.Error("want one record, got:", count)
+	}
+}
+
+func testCongressionalDistrictToOneStateUsingStatefp(t *testing.T) {
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var local CongressionalDistrict
+	var foreign State
+
+	seed := randomize.NewSeed()
+	if err := randomize.Struct(seed, &local, congressionalDistrictDBTypes, true, congressionalDistrictColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize CongressionalDistrict struct: %s", err)
+	}
+	if err := randomize.Struct(seed, &foreign, stateDBTypes, false, stateColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize State struct: %s", err)
+	}
+
+	if err := foreign.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	queries.Assign(&local.Statefp, foreign.Statefp)
+	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	check, err := local.Statefp().One(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !queries.Equal(check.Statefp, foreign.Statefp) {
+		t.Errorf("want: %v, got %v", foreign.Statefp, check.Statefp)
+	}
+
+	slice := CongressionalDistrictSlice{&local}
+	if err = local.L.LoadStatefp(ctx, tx, false, (*[]*CongressionalDistrict)(&slice), nil); err != nil {
+		t.Fatal(err)
+	}
+	if local.R.Statefp == nil {
+		t.Error("struct should have been eager loaded")
+	}
+
+	local.R.Statefp = nil
+	if err = local.L.LoadStatefp(ctx, tx, true, &local, nil); err != nil {
+		t.Fatal(err)
+	}
+	if local.R.Statefp == nil {
+		t.Error("struct should have been eager loaded")
+	}
+}
+
+func testCongressionalDistrictToOneSetOpStateUsingStatefp(t *testing.T) {
+	var err error
+
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var a CongressionalDistrict
+	var b, c State
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, congressionalDistrictDBTypes, false, strmangle.SetComplement(congressionalDistrictPrimaryKeyColumns, congressionalDistrictColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	if err = randomize.Struct(seed, &b, stateDBTypes, false, strmangle.SetComplement(statePrimaryKeyColumns, stateColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	if err = randomize.Struct(seed, &c, stateDBTypes, false, strmangle.SetComplement(statePrimaryKeyColumns, stateColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	for i, x := range []*State{&b, &c} {
+		err = a.SetStatefp(ctx, tx, i != 0, x)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if a.R.Statefp != x {
+			t.Error("relationship struct not set to correct value")
+		}
+
+		if x.R.StatefpCongressionalDistricts[0] != &a {
+			t.Error("failed to append to foreign relationship struct")
+		}
+		if !queries.Equal(a.Statefp, x.Statefp) {
+			t.Error("foreign key was wrong value", a.Statefp)
+		}
+
+		zero := reflect.Zero(reflect.TypeOf(a.Statefp))
+		reflect.Indirect(reflect.ValueOf(&a.Statefp)).Set(zero)
+
+		if err = a.Reload(ctx, tx); err != nil {
+			t.Fatal("failed to reload", err)
+		}
+
+		if !queries.Equal(a.Statefp, x.Statefp) {
+			t.Error("foreign key was wrong value", a.Statefp, x.Statefp)
+		}
+	}
+}
+
+func testCongressionalDistrictToOneRemoveOpStateUsingStatefp(t *testing.T) {
+	var err error
+
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var a CongressionalDistrict
+	var b State
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, congressionalDistrictDBTypes, false, strmangle.SetComplement(congressionalDistrictPrimaryKeyColumns, congressionalDistrictColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	if err = randomize.Struct(seed, &b, stateDBTypes, false, strmangle.SetComplement(statePrimaryKeyColumns, stateColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+
+	if err = a.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	if err = a.SetStatefp(ctx, tx, true, &b); err != nil {
+		t.Fatal(err)
+	}
+
+	if err = a.RemoveStatefp(ctx, tx, &b); err != nil {
+		t.Error("failed to remove relationship")
+	}
+
+	count, err := a.Statefp().Count(ctx, tx)
+	if err != nil {
+		t.Error(err)
+	}
+	if count != 0 {
+		t.Error("want no relationships remaining")
+	}
+
+	if a.R.Statefp != nil {
+		t.Error("R struct entry should be nil")
+	}
+
+	if !queries.IsValuerNil(a.Statefp) {
+		t.Error("foreign key value should be nil")
+	}
+
+	if len(b.R.StatefpCongressionalDistricts) != 0 {
+		t.Error("failed to remove a from b's relationships")
 	}
 }
 

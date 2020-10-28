@@ -12,6 +12,8 @@ func TestUpsert(t *testing.T) {
 
 	t.Run("StateFipsCodes", testStateFipsCodesUpsert)
 
+	t.Run("States", testStatesUpsert)
+
 	t.Run("UsCounties", testUsCountiesUpsert)
 
 	t.Run("ZipCodes", testZipCodesUpsert)

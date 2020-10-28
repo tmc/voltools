@@ -149,7 +149,7 @@ func testZipCodesExists(t *testing.T) {
 		t.Error(err)
 	}
 
-	e, err := ZipCodeExists(ctx, tx, o.Gid)
+	e, err := ZipCodeExists(ctx, tx, o.Geoid10)
 	if err != nil {
 		t.Errorf("Unable to check if ZipCode exists: %s", err)
 	}
@@ -175,7 +175,7 @@ func testZipCodesFind(t *testing.T) {
 		t.Error(err)
 	}
 
-	zipCodeFound, err := FindZipCode(ctx, tx, o.Gid)
+	zipCodeFound, err := FindZipCode(ctx, tx, o.Geoid10)
 	if err != nil {
 		t.Error(err)
 	}

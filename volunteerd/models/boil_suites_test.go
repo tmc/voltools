@@ -15,6 +15,7 @@ func TestParent(t *testing.T) {
 	t.Run("CongressionalDistricts", testCongressionalDistricts)
 	t.Run("SchemaMigrations", testSchemaMigrations)
 	t.Run("StateFipsCodes", testStateFipsCodes)
+	t.Run("States", testStates)
 	t.Run("UsCounties", testUsCounties)
 	t.Run("ZipCodes", testZipCodes)
 }
@@ -23,6 +24,7 @@ func TestDelete(t *testing.T) {
 	t.Run("CongressionalDistricts", testCongressionalDistrictsDelete)
 	t.Run("SchemaMigrations", testSchemaMigrationsDelete)
 	t.Run("StateFipsCodes", testStateFipsCodesDelete)
+	t.Run("States", testStatesDelete)
 	t.Run("UsCounties", testUsCountiesDelete)
 	t.Run("ZipCodes", testZipCodesDelete)
 }
@@ -31,6 +33,7 @@ func TestQueryDeleteAll(t *testing.T) {
 	t.Run("CongressionalDistricts", testCongressionalDistrictsQueryDeleteAll)
 	t.Run("SchemaMigrations", testSchemaMigrationsQueryDeleteAll)
 	t.Run("StateFipsCodes", testStateFipsCodesQueryDeleteAll)
+	t.Run("States", testStatesQueryDeleteAll)
 	t.Run("UsCounties", testUsCountiesQueryDeleteAll)
 	t.Run("ZipCodes", testZipCodesQueryDeleteAll)
 }
@@ -39,6 +42,7 @@ func TestSliceDeleteAll(t *testing.T) {
 	t.Run("CongressionalDistricts", testCongressionalDistrictsSliceDeleteAll)
 	t.Run("SchemaMigrations", testSchemaMigrationsSliceDeleteAll)
 	t.Run("StateFipsCodes", testStateFipsCodesSliceDeleteAll)
+	t.Run("States", testStatesSliceDeleteAll)
 	t.Run("UsCounties", testUsCountiesSliceDeleteAll)
 	t.Run("ZipCodes", testZipCodesSliceDeleteAll)
 }
@@ -47,6 +51,7 @@ func TestExists(t *testing.T) {
 	t.Run("CongressionalDistricts", testCongressionalDistrictsExists)
 	t.Run("SchemaMigrations", testSchemaMigrationsExists)
 	t.Run("StateFipsCodes", testStateFipsCodesExists)
+	t.Run("States", testStatesExists)
 	t.Run("UsCounties", testUsCountiesExists)
 	t.Run("ZipCodes", testZipCodesExists)
 }
@@ -55,6 +60,7 @@ func TestFind(t *testing.T) {
 	t.Run("CongressionalDistricts", testCongressionalDistrictsFind)
 	t.Run("SchemaMigrations", testSchemaMigrationsFind)
 	t.Run("StateFipsCodes", testStateFipsCodesFind)
+	t.Run("States", testStatesFind)
 	t.Run("UsCounties", testUsCountiesFind)
 	t.Run("ZipCodes", testZipCodesFind)
 }
@@ -63,6 +69,7 @@ func TestBind(t *testing.T) {
 	t.Run("CongressionalDistricts", testCongressionalDistrictsBind)
 	t.Run("SchemaMigrations", testSchemaMigrationsBind)
 	t.Run("StateFipsCodes", testStateFipsCodesBind)
+	t.Run("States", testStatesBind)
 	t.Run("UsCounties", testUsCountiesBind)
 	t.Run("ZipCodes", testZipCodesBind)
 }
@@ -71,6 +78,7 @@ func TestOne(t *testing.T) {
 	t.Run("CongressionalDistricts", testCongressionalDistrictsOne)
 	t.Run("SchemaMigrations", testSchemaMigrationsOne)
 	t.Run("StateFipsCodes", testStateFipsCodesOne)
+	t.Run("States", testStatesOne)
 	t.Run("UsCounties", testUsCountiesOne)
 	t.Run("ZipCodes", testZipCodesOne)
 }
@@ -79,6 +87,7 @@ func TestAll(t *testing.T) {
 	t.Run("CongressionalDistricts", testCongressionalDistrictsAll)
 	t.Run("SchemaMigrations", testSchemaMigrationsAll)
 	t.Run("StateFipsCodes", testStateFipsCodesAll)
+	t.Run("States", testStatesAll)
 	t.Run("UsCounties", testUsCountiesAll)
 	t.Run("ZipCodes", testZipCodesAll)
 }
@@ -87,6 +96,7 @@ func TestCount(t *testing.T) {
 	t.Run("CongressionalDistricts", testCongressionalDistrictsCount)
 	t.Run("SchemaMigrations", testSchemaMigrationsCount)
 	t.Run("StateFipsCodes", testStateFipsCodesCount)
+	t.Run("States", testStatesCount)
 	t.Run("UsCounties", testUsCountiesCount)
 	t.Run("ZipCodes", testZipCodesCount)
 }
@@ -95,6 +105,7 @@ func TestHooks(t *testing.T) {
 	t.Run("CongressionalDistricts", testCongressionalDistrictsHooks)
 	t.Run("SchemaMigrations", testSchemaMigrationsHooks)
 	t.Run("StateFipsCodes", testStateFipsCodesHooks)
+	t.Run("States", testStatesHooks)
 	t.Run("UsCounties", testUsCountiesHooks)
 	t.Run("ZipCodes", testZipCodesHooks)
 }
@@ -106,6 +117,8 @@ func TestInsert(t *testing.T) {
 	t.Run("SchemaMigrations", testSchemaMigrationsInsertWhitelist)
 	t.Run("StateFipsCodes", testStateFipsCodesInsert)
 	t.Run("StateFipsCodes", testStateFipsCodesInsertWhitelist)
+	t.Run("States", testStatesInsert)
+	t.Run("States", testStatesInsertWhitelist)
 	t.Run("UsCounties", testUsCountiesInsert)
 	t.Run("UsCounties", testUsCountiesInsertWhitelist)
 	t.Run("ZipCodes", testZipCodesInsert)
@@ -114,7 +127,9 @@ func TestInsert(t *testing.T) {
 
 // TestToOne tests cannot be run in parallel
 // or deadlocks can occur.
-func TestToOne(t *testing.T) {}
+func TestToOne(t *testing.T) {
+	t.Run("CongressionalDistrictToStateUsingStatefp", testCongressionalDistrictToOneStateUsingStatefp)
+}
 
 // TestOneToOne tests cannot be run in parallel
 // or deadlocks can occur.
@@ -122,15 +137,21 @@ func TestOneToOne(t *testing.T) {}
 
 // TestToMany tests cannot be run in parallel
 // or deadlocks can occur.
-func TestToMany(t *testing.T) {}
+func TestToMany(t *testing.T) {
+	t.Run("StateToStatefpCongressionalDistricts", testStateToManyStatefpCongressionalDistricts)
+}
 
 // TestToOneSet tests cannot be run in parallel
 // or deadlocks can occur.
-func TestToOneSet(t *testing.T) {}
+func TestToOneSet(t *testing.T) {
+	t.Run("CongressionalDistrictToStateUsingStatefpCongressionalDistricts", testCongressionalDistrictToOneSetOpStateUsingStatefp)
+}
 
 // TestToOneRemove tests cannot be run in parallel
 // or deadlocks can occur.
-func TestToOneRemove(t *testing.T) {}
+func TestToOneRemove(t *testing.T) {
+	t.Run("CongressionalDistrictToStateUsingStatefpCongressionalDistricts", testCongressionalDistrictToOneRemoveOpStateUsingStatefp)
+}
 
 // TestOneToOneSet tests cannot be run in parallel
 // or deadlocks can occur.
@@ -142,20 +163,27 @@ func TestOneToOneRemove(t *testing.T) {}
 
 // TestToManyAdd tests cannot be run in parallel
 // or deadlocks can occur.
-func TestToManyAdd(t *testing.T) {}
+func TestToManyAdd(t *testing.T) {
+	t.Run("StateToStatefpCongressionalDistricts", testStateToManyAddOpStatefpCongressionalDistricts)
+}
 
 // TestToManySet tests cannot be run in parallel
 // or deadlocks can occur.
-func TestToManySet(t *testing.T) {}
+func TestToManySet(t *testing.T) {
+	t.Run("StateToStatefpCongressionalDistricts", testStateToManySetOpStatefpCongressionalDistricts)
+}
 
 // TestToManyRemove tests cannot be run in parallel
 // or deadlocks can occur.
-func TestToManyRemove(t *testing.T) {}
+func TestToManyRemove(t *testing.T) {
+	t.Run("StateToStatefpCongressionalDistricts", testStateToManyRemoveOpStatefpCongressionalDistricts)
+}
 
 func TestReload(t *testing.T) {
 	t.Run("CongressionalDistricts", testCongressionalDistrictsReload)
 	t.Run("SchemaMigrations", testSchemaMigrationsReload)
 	t.Run("StateFipsCodes", testStateFipsCodesReload)
+	t.Run("States", testStatesReload)
 	t.Run("UsCounties", testUsCountiesReload)
 	t.Run("ZipCodes", testZipCodesReload)
 }
@@ -164,6 +192,7 @@ func TestReloadAll(t *testing.T) {
 	t.Run("CongressionalDistricts", testCongressionalDistrictsReloadAll)
 	t.Run("SchemaMigrations", testSchemaMigrationsReloadAll)
 	t.Run("StateFipsCodes", testStateFipsCodesReloadAll)
+	t.Run("States", testStatesReloadAll)
 	t.Run("UsCounties", testUsCountiesReloadAll)
 	t.Run("ZipCodes", testZipCodesReloadAll)
 }
@@ -172,6 +201,7 @@ func TestSelect(t *testing.T) {
 	t.Run("CongressionalDistricts", testCongressionalDistrictsSelect)
 	t.Run("SchemaMigrations", testSchemaMigrationsSelect)
 	t.Run("StateFipsCodes", testStateFipsCodesSelect)
+	t.Run("States", testStatesSelect)
 	t.Run("UsCounties", testUsCountiesSelect)
 	t.Run("ZipCodes", testZipCodesSelect)
 }
@@ -180,6 +210,7 @@ func TestUpdate(t *testing.T) {
 	t.Run("CongressionalDistricts", testCongressionalDistrictsUpdate)
 	t.Run("SchemaMigrations", testSchemaMigrationsUpdate)
 	t.Run("StateFipsCodes", testStateFipsCodesUpdate)
+	t.Run("States", testStatesUpdate)
 	t.Run("UsCounties", testUsCountiesUpdate)
 	t.Run("ZipCodes", testZipCodesUpdate)
 }
@@ -188,6 +219,7 @@ func TestSliceUpdateAll(t *testing.T) {
 	t.Run("CongressionalDistricts", testCongressionalDistrictsSliceUpdateAll)
 	t.Run("SchemaMigrations", testSchemaMigrationsSliceUpdateAll)
 	t.Run("StateFipsCodes", testStateFipsCodesSliceUpdateAll)
+	t.Run("States", testStatesSliceUpdateAll)
 	t.Run("UsCounties", testUsCountiesSliceUpdateAll)
 	t.Run("ZipCodes", testZipCodesSliceUpdateAll)
 }

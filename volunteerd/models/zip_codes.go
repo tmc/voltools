@@ -26,7 +26,7 @@ import (
 type ZipCode struct {
 	Gid        int          `boil:"gid" json:"gid" toml:"gid" yaml:"gid"`
 	ZipCode    null.String  `boil:"zcta5ce10" json:"zcta5ce10,omitempty" toml:"zcta5ce10" yaml:"zcta5ce10,omitempty"`
-	Geoid10    null.String  `boil:"geoid10" json:"geoid10,omitempty" toml:"geoid10" yaml:"geoid10,omitempty"`
+	Geoid10    string       `boil:"geoid10" json:"geoid10" toml:"geoid10" yaml:"geoid10"`
 	Classfp10  null.String  `boil:"classfp10" json:"classfp10,omitempty" toml:"classfp10" yaml:"classfp10,omitempty"`
 	MTFCC10    null.String  `boil:"mtfcc10" json:"mtfcc10,omitempty" toml:"mtfcc10" yaml:"mtfcc10,omitempty"`
 	Funcstat10 null.String  `boil:"funcstat10" json:"funcstat10,omitempty" toml:"funcstat10" yaml:"funcstat10,omitempty"`
@@ -68,7 +68,7 @@ var ZipCodeColumns = struct {
 var ZipCodeWhere = struct {
 	Gid        whereHelperint
 	ZipCode    whereHelpernull_String
-	Geoid10    whereHelpernull_String
+	Geoid10    whereHelperstring
 	Classfp10  whereHelpernull_String
 	MTFCC10    whereHelpernull_String
 	Funcstat10 whereHelpernull_String
@@ -79,7 +79,7 @@ var ZipCodeWhere = struct {
 }{
 	Gid:        whereHelperint{field: "\"zip_codes\".\"gid\""},
 	ZipCode:    whereHelpernull_String{field: "\"zip_codes\".\"zcta5ce10\""},
-	Geoid10:    whereHelpernull_String{field: "\"zip_codes\".\"geoid10\""},
+	Geoid10:    whereHelperstring{field: "\"zip_codes\".\"geoid10\""},
 	Classfp10:  whereHelpernull_String{field: "\"zip_codes\".\"classfp10\""},
 	MTFCC10:    whereHelpernull_String{field: "\"zip_codes\".\"mtfcc10\""},
 	Funcstat10: whereHelpernull_String{field: "\"zip_codes\".\"funcstat10\""},
@@ -109,7 +109,7 @@ var (
 	zipCodeAllColumns            = []string{"gid", "zcta5ce10", "geoid10", "classfp10", "mtfcc10", "funcstat10", "aland10", "awater10", "intptlat10", "intptlon10"}
 	zipCodeColumnsWithoutDefault = []string{"zcta5ce10", "geoid10", "classfp10", "mtfcc10", "funcstat10", "aland10", "awater10", "intptlat10", "intptlon10"}
 	zipCodeColumnsWithDefault    = []string{"gid"}
-	zipCodePrimaryKeyColumns     = []string{"gid"}
+	zipCodePrimaryKeyColumns     = []string{"geoid10"}
 )
 
 type (
@@ -395,7 +395,7 @@ func ZipCodes(mods ...qm.QueryMod) zipCodeQuery {
 
 // FindZipCode retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
-func FindZipCode(ctx context.Context, exec boil.ContextExecutor, gid int, selectCols ...string) (*ZipCode, error) {
+func FindZipCode(ctx context.Context, exec boil.ContextExecutor, geoid10 string, selectCols ...string) (*ZipCode, error) {
 	zipCodeObj := &ZipCode{}
 
 	sel := "*"
@@ -403,10 +403,10 @@ func FindZipCode(ctx context.Context, exec boil.ContextExecutor, gid int, select
 		sel = strings.Join(strmangle.IdentQuoteSlice(dialect.LQ, dialect.RQ, selectCols), ",")
 	}
 	query := fmt.Sprintf(
-		"select %s from \"zip_codes\" where \"gid\"=$1", sel,
+		"select %s from \"zip_codes\" where \"geoid10\"=$1", sel,
 	)
 
-	q := queries.Raw(query, gid)
+	q := queries.Raw(query, geoid10)
 
 	err := q.Bind(ctx, exec, zipCodeObj)
 	if err != nil {
@@ -753,7 +753,7 @@ func (o *ZipCode) Delete(ctx context.Context, exec boil.ContextExecutor) (int64,
 	}
 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), zipCodePrimaryKeyMapping)
-	sql := "DELETE FROM \"zip_codes\" WHERE \"gid\"=$1"
+	sql := "DELETE FROM \"zip_codes\" WHERE \"geoid10\"=$1"
 
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
@@ -850,7 +850,7 @@ func (o ZipCodeSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor) 
 // Reload refetches the object from the database
 // using the primary keys with an executor.
 func (o *ZipCode) Reload(ctx context.Context, exec boil.ContextExecutor) error {
-	ret, err := FindZipCode(ctx, exec, o.Gid)
+	ret, err := FindZipCode(ctx, exec, o.Geoid10)
 	if err != nil {
 		return err
 	}
@@ -889,16 +889,16 @@ func (o *ZipCodeSlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor)
 }
 
 // ZipCodeExists checks if the ZipCode row exists.
-func ZipCodeExists(ctx context.Context, exec boil.ContextExecutor, gid int) (bool, error) {
+func ZipCodeExists(ctx context.Context, exec boil.ContextExecutor, geoid10 string) (bool, error) {
 	var exists bool
-	sql := "select exists(select 1 from \"zip_codes\" where \"gid\"=$1 limit 1)"
+	sql := "select exists(select 1 from \"zip_codes\" where \"geoid10\"=$1 limit 1)"
 
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
 		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, gid)
+		fmt.Fprintln(writer, geoid10)
 	}
-	row := exec.QueryRowContext(ctx, sql, gid)
+	row := exec.QueryRowContext(ctx, sql, geoid10)
 
 	err := row.Scan(&exists)
 	if err != nil {

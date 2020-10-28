@@ -7,12 +7,14 @@ var TableNames = struct {
 	CongressionalDistricts string
 	SchemaMigrations       string
 	StateFipsCodes         string
+	States                 string
 	UsCounties             string
 	ZipCodes               string
 }{
 	CongressionalDistricts: "congressional_districts",
 	SchemaMigrations:       "schema_migrations",
 	StateFipsCodes:         "state_fips_codes",
+	States:                 "states",
 	UsCounties:             "us_counties",
 	ZipCodes:               "zip_codes",
 }

@@ -63,10 +63,10 @@ db/migrations/000003_counties.up.sql: shapefiles/tl_2019_us_county.shp
 	shp2pgsql shapefiles/tl_2019_us_county.shp us_counties > db/migrations/000003_counties.up.sql
 
 db/migrations/000005_zip_codes.up.pgsql: shapefiles/tl_2019_us_zcta510.shp
-	shp2pgsql -D $< zip_codes > $@
+	shp2pgsql $< zip_codes > $@
 
 db/migrations/000006_states.up.sql: shapefiles/tl_2019_us_state.shp
-	shp2pgsql -D $< states > $@
+	shp2pgsql $< states > $@
 
 cloud_sql_proxy:
 	curl -so cloud_sql_proxy https://dl.google.com/cloudsql/cloud_sql_proxy.darwin.amd64

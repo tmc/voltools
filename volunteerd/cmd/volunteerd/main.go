@@ -75,9 +75,9 @@ type Config struct {
 	StaticRoot   string
 }
 
+// NewServer creates a new server.
 func NewServer(ctx context.Context, config Config) (*Server, error) {
 	connStr, err := pq.ParseURL(config.DatabaseURL)
-	fmt.Println("connstr:", connStr)
 	if err != nil {
 		return nil, fmt.Errorf("issue parsing DATABASE_URL: %w", err)
 	}
@@ -192,12 +192,11 @@ func (s *Server) handleRoot(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) handleZip(w http.ResponseWriter, r *http.Request) {
 	zip := r.URL.Path[len("/zip/"):]
-	fmt.Println("zip", zip)
-	fmt.Fprintln(w, "zip:", zip)
 	zi, err := s.lookupZipInfo(r.Context(), zip)
 	if err != nil {
 		panic(err)
 	}
+	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(zi)
 }
 

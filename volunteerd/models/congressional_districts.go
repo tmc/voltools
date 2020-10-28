@@ -27,7 +27,7 @@ type CongressionalDistrict struct {
 	Gid      int          `boil:"gid" json:"gid" toml:"gid" yaml:"gid"`
 	Statefp  null.String  `boil:"statefp" json:"statefp,omitempty" toml:"statefp" yaml:"statefp,omitempty"`
 	CD116FP  null.String  `boil:"cd116fp" json:"cd116fp,omitempty" toml:"cd116fp" yaml:"cd116fp,omitempty"`
-	Geoid    null.String  `boil:"geoid" json:"geoid,omitempty" toml:"geoid" yaml:"geoid,omitempty"`
+	Geoid    string       `boil:"geoid" json:"geoid" toml:"geoid" yaml:"geoid"`
 	Name     null.String  `boil:"namelsad" json:"namelsad,omitempty" toml:"namelsad" yaml:"namelsad,omitempty"`
 	Lsad     null.String  `boil:"lsad" json:"lsad,omitempty" toml:"lsad" yaml:"lsad,omitempty"`
 	Cdsessn  null.String  `boil:"cdsessn" json:"cdsessn,omitempty" toml:"cdsessn" yaml:"cdsessn,omitempty"`
@@ -120,6 +120,29 @@ func (w whereHelpernull_String) GTE(x null.String) qm.QueryMod {
 	return qmhelper.Where(w.field, qmhelper.GTE, x)
 }
 
+type whereHelperstring struct{ field string }
+
+func (w whereHelperstring) EQ(x string) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.EQ, x) }
+func (w whereHelperstring) NEQ(x string) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.NEQ, x) }
+func (w whereHelperstring) LT(x string) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.LT, x) }
+func (w whereHelperstring) LTE(x string) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.LTE, x) }
+func (w whereHelperstring) GT(x string) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.GT, x) }
+func (w whereHelperstring) GTE(x string) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.GTE, x) }
+func (w whereHelperstring) IN(slice []string) qm.QueryMod {
+	values := make([]interface{}, 0, len(slice))
+	for _, value := range slice {
+		values = append(values, value)
+	}
+	return qm.WhereIn(fmt.Sprintf("%s IN ?", w.field), values...)
+}
+func (w whereHelperstring) NIN(slice []string) qm.QueryMod {
+	values := make([]interface{}, 0, len(slice))
+	for _, value := range slice {
+		values = append(values, value)
+	}
+	return qm.WhereNotIn(fmt.Sprintf("%s NOT IN ?", w.field), values...)
+}
+
 type whereHelpernull_Float64 struct{ field string }
 
 func (w whereHelpernull_Float64) EQ(x null.Float64) qm.QueryMod {
@@ -147,7 +170,7 @@ var CongressionalDistrictWhere = struct {
 	Gid      whereHelperint
 	Statefp  whereHelpernull_String
 	CD116FP  whereHelpernull_String
-	Geoid    whereHelpernull_String
+	Geoid    whereHelperstring
 	Name     whereHelpernull_String
 	Lsad     whereHelpernull_String
 	Cdsessn  whereHelpernull_String
@@ -161,7 +184,7 @@ var CongressionalDistrictWhere = struct {
 	Gid:      whereHelperint{field: "\"congressional_districts\".\"gid\""},
 	Statefp:  whereHelpernull_String{field: "\"congressional_districts\".\"statefp\""},
 	CD116FP:  whereHelpernull_String{field: "\"congressional_districts\".\"cd116fp\""},
-	Geoid:    whereHelpernull_String{field: "\"congressional_districts\".\"geoid\""},
+	Geoid:    whereHelperstring{field: "\"congressional_districts\".\"geoid\""},
 	Name:     whereHelpernull_String{field: "\"congressional_districts\".\"namelsad\""},
 	Lsad:     whereHelpernull_String{field: "\"congressional_districts\".\"lsad\""},
 	Cdsessn:  whereHelpernull_String{field: "\"congressional_districts\".\"cdsessn\""},
@@ -175,10 +198,14 @@ var CongressionalDistrictWhere = struct {
 
 // CongressionalDistrictRels is where relationship names are stored.
 var CongressionalDistrictRels = struct {
-}{}
+	Statefp string
+}{
+	Statefp: "Statefp",
+}
 
 // congressionalDistrictR is where relationships are stored.
 type congressionalDistrictR struct {
+	Statefp *State `boil:"Statefp" json:"Statefp" toml:"Statefp" yaml:"Statefp"`
 }
 
 // NewStruct creates a new relationship struct
@@ -193,7 +220,7 @@ var (
 	congressionalDistrictAllColumns            = []string{"gid", "statefp", "cd116fp", "geoid", "namelsad", "lsad", "cdsessn", "mtfcc", "funcstat", "aland", "awater", "intptlat", "intptlon"}
 	congressionalDistrictColumnsWithoutDefault = []string{"statefp", "cd116fp", "geoid", "namelsad", "lsad", "cdsessn", "mtfcc", "funcstat", "aland", "awater", "intptlat", "intptlon"}
 	congressionalDistrictColumnsWithDefault    = []string{"gid"}
-	congressionalDistrictPrimaryKeyColumns     = []string{"gid"}
+	congressionalDistrictPrimaryKeyColumns     = []string{"geoid"}
 )
 
 type (
@@ -471,6 +498,208 @@ func (q congressionalDistrictQuery) Exists(ctx context.Context, exec boil.Contex
 	return count > 0, nil
 }
 
+// Statefp pointed to by the foreign key.
+func (o *CongressionalDistrict) Statefp(mods ...qm.QueryMod) stateQuery {
+	queryMods := []qm.QueryMod{
+		qm.Where("\"statefp\" = ?", o.Statefp),
+	}
+
+	queryMods = append(queryMods, mods...)
+
+	query := States(queryMods...)
+	queries.SetFrom(query.Query, "\"states\"")
+
+	return query
+}
+
+// LoadStatefp allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for an N-1 relationship.
+func (congressionalDistrictL) LoadStatefp(ctx context.Context, e boil.ContextExecutor, singular bool, maybeCongressionalDistrict interface{}, mods queries.Applicator) error {
+	var slice []*CongressionalDistrict
+	var object *CongressionalDistrict
+
+	if singular {
+		object = maybeCongressionalDistrict.(*CongressionalDistrict)
+	} else {
+		slice = *maybeCongressionalDistrict.(*[]*CongressionalDistrict)
+	}
+
+	args := make([]interface{}, 0, 1)
+	if singular {
+		if object.R == nil {
+			object.R = &congressionalDistrictR{}
+		}
+		if !queries.IsNil(object.Statefp) {
+			args = append(args, object.Statefp)
+		}
+
+	} else {
+	Outer:
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &congressionalDistrictR{}
+			}
+
+			for _, a := range args {
+				if queries.Equal(a, obj.Statefp) {
+					continue Outer
+				}
+			}
+
+			if !queries.IsNil(obj.Statefp) {
+				args = append(args, obj.Statefp)
+			}
+
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	query := NewQuery(
+		qm.From(`states`),
+		qm.WhereIn(`states.statefp in ?`, args...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.QueryContext(ctx, e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load State")
+	}
+
+	var resultSlice []*State
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice State")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results of eager load for states")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for states")
+	}
+
+	if len(congressionalDistrictAfterSelectHooks) != 0 {
+		for _, obj := range resultSlice {
+			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
+				return err
+			}
+		}
+	}
+
+	if len(resultSlice) == 0 {
+		return nil
+	}
+
+	if singular {
+		foreign := resultSlice[0]
+		object.R.Statefp = foreign
+		if foreign.R == nil {
+			foreign.R = &stateR{}
+		}
+		foreign.R.StatefpCongressionalDistricts = append(foreign.R.StatefpCongressionalDistricts, object)
+		return nil
+	}
+
+	for _, local := range slice {
+		for _, foreign := range resultSlice {
+			if queries.Equal(local.Statefp, foreign.Statefp) {
+				local.R.Statefp = foreign
+				if foreign.R == nil {
+					foreign.R = &stateR{}
+				}
+				foreign.R.StatefpCongressionalDistricts = append(foreign.R.StatefpCongressionalDistricts, local)
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// SetStatefp of the congressionalDistrict to the related item.
+// Sets o.R.Statefp to related.
+// Adds o to related.R.StatefpCongressionalDistricts.
+func (o *CongressionalDistrict) SetStatefp(ctx context.Context, exec boil.ContextExecutor, insert bool, related *State) error {
+	var err error
+	if insert {
+		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
+			return errors.Wrap(err, "failed to insert into foreign table")
+		}
+	}
+
+	updateQuery := fmt.Sprintf(
+		"UPDATE \"congressional_districts\" SET %s WHERE %s",
+		strmangle.SetParamNames("\"", "\"", 1, []string{"statefp"}),
+		strmangle.WhereClause("\"", "\"", 2, congressionalDistrictPrimaryKeyColumns),
+	)
+	values := []interface{}{related.Statefp, o.Geoid}
+
+	if boil.IsDebug(ctx) {
+		writer := boil.DebugWriterFrom(ctx)
+		fmt.Fprintln(writer, updateQuery)
+		fmt.Fprintln(writer, values)
+	}
+	if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+		return errors.Wrap(err, "failed to update local table")
+	}
+
+	queries.Assign(&o.Statefp, related.Statefp)
+	if o.R == nil {
+		o.R = &congressionalDistrictR{
+			Statefp: related,
+		}
+	} else {
+		o.R.Statefp = related
+	}
+
+	if related.R == nil {
+		related.R = &stateR{
+			StatefpCongressionalDistricts: CongressionalDistrictSlice{o},
+		}
+	} else {
+		related.R.StatefpCongressionalDistricts = append(related.R.StatefpCongressionalDistricts, o)
+	}
+
+	return nil
+}
+
+// RemoveStatefp relationship.
+// Sets o.R.Statefp to nil.
+// Removes o from all passed in related items' relationships struct (Optional).
+func (o *CongressionalDistrict) RemoveStatefp(ctx context.Context, exec boil.ContextExecutor, related *State) error {
+	var err error
+
+	queries.SetScanner(&o.Statefp, nil)
+	if _, err = o.Update(ctx, exec, boil.Whitelist("statefp")); err != nil {
+		return errors.Wrap(err, "failed to update local table")
+	}
+
+	if o.R != nil {
+		o.R.Statefp = nil
+	}
+	if related == nil || related.R == nil {
+		return nil
+	}
+
+	for i, ri := range related.R.StatefpCongressionalDistricts {
+		if queries.Equal(o.Statefp, ri.Statefp) {
+			continue
+		}
+
+		ln := len(related.R.StatefpCongressionalDistricts)
+		if ln > 1 && i < ln-1 {
+			related.R.StatefpCongressionalDistricts[i] = related.R.StatefpCongressionalDistricts[ln-1]
+		}
+		related.R.StatefpCongressionalDistricts = related.R.StatefpCongressionalDistricts[:ln-1]
+		break
+	}
+	return nil
+}
+
 // CongressionalDistricts retrieves all the records using an executor.
 func CongressionalDistricts(mods ...qm.QueryMod) congressionalDistrictQuery {
 	mods = append(mods, qm.From("\"congressional_districts\""))
@@ -479,7 +708,7 @@ func CongressionalDistricts(mods ...qm.QueryMod) congressionalDistrictQuery {
 
 // FindCongressionalDistrict retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
-func FindCongressionalDistrict(ctx context.Context, exec boil.ContextExecutor, gid int, selectCols ...string) (*CongressionalDistrict, error) {
+func FindCongressionalDistrict(ctx context.Context, exec boil.ContextExecutor, geoid string, selectCols ...string) (*CongressionalDistrict, error) {
 	congressionalDistrictObj := &CongressionalDistrict{}
 
 	sel := "*"
@@ -487,10 +716,10 @@ func FindCongressionalDistrict(ctx context.Context, exec boil.ContextExecutor, g
 		sel = strings.Join(strmangle.IdentQuoteSlice(dialect.LQ, dialect.RQ, selectCols), ",")
 	}
 	query := fmt.Sprintf(
-		"select %s from \"congressional_districts\" where \"gid\"=$1", sel,
+		"select %s from \"congressional_districts\" where \"geoid\"=$1", sel,
 	)
 
-	q := queries.Raw(query, gid)
+	q := queries.Raw(query, geoid)
 
 	err := q.Bind(ctx, exec, congressionalDistrictObj)
 	if err != nil {
@@ -837,7 +1066,7 @@ func (o *CongressionalDistrict) Delete(ctx context.Context, exec boil.ContextExe
 	}
 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), congressionalDistrictPrimaryKeyMapping)
-	sql := "DELETE FROM \"congressional_districts\" WHERE \"gid\"=$1"
+	sql := "DELETE FROM \"congressional_districts\" WHERE \"geoid\"=$1"
 
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
@@ -934,7 +1163,7 @@ func (o CongressionalDistrictSlice) DeleteAll(ctx context.Context, exec boil.Con
 // Reload refetches the object from the database
 // using the primary keys with an executor.
 func (o *CongressionalDistrict) Reload(ctx context.Context, exec boil.ContextExecutor) error {
-	ret, err := FindCongressionalDistrict(ctx, exec, o.Gid)
+	ret, err := FindCongressionalDistrict(ctx, exec, o.Geoid)
 	if err != nil {
 		return err
 	}
@@ -973,16 +1202,16 @@ func (o *CongressionalDistrictSlice) ReloadAll(ctx context.Context, exec boil.Co
 }
 
 // CongressionalDistrictExists checks if the CongressionalDistrict row exists.
-func CongressionalDistrictExists(ctx context.Context, exec boil.ContextExecutor, gid int) (bool, error) {
+func CongressionalDistrictExists(ctx context.Context, exec boil.ContextExecutor, geoid string) (bool, error) {
 	var exists bool
-	sql := "select exists(select 1 from \"congressional_districts\" where \"gid\"=$1 limit 1)"
+	sql := "select exists(select 1 from \"congressional_districts\" where \"geoid\"=$1 limit 1)"
 
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
 		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, gid)
+		fmt.Fprintln(writer, geoid)
 	}
-	row := exec.QueryRowContext(ctx, sql, gid)
+	row := exec.QueryRowContext(ctx, sql, geoid)
 
 	err := row.Scan(&exists)
 	if err != nil {

@@ -8,6 +8,8 @@ blacklist = [
 "spatial_ref_sys", "geography_columns", "geometry_columns",
 "zip_codes.geom",
 "congressional_districts.geom",
+"states.geom",
+"zip_codes.geom",
 ]
 
 [aliases.tables.zip_codes.columns]
