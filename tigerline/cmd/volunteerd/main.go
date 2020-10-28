@@ -48,10 +48,13 @@ func getEnv(envVar, defaultValue string) string {
 
 // Server implements the server for volunteerd.
 type Server struct {
+	// holds configuration for the server.
 	config Config
 
+	// assetRegexp identifies patterns that should be served directly, without template interpolation.
 	assetRegexp *regexp.Regexp
-	db          *sql.DB
+
+	db *sql.DB // connection to a SQL database.
 
 	mu           sync.RWMutex // protects the following
 	cachedAppCSS template.CSS
