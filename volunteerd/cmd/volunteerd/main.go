@@ -74,6 +74,7 @@ type Config struct {
 
 func NewServer(ctx context.Context, config Config) (*Server, error) {
 	connStr, err := pq.ParseURL(config.DatabaseURL)
+	fmt.Println("connstr:", connStr)
 	if err != nil {
 		return nil, fmt.Errorf("issue parsing DATABASE_URL: %w", err)
 	}
